@@ -2,9 +2,9 @@ name: Get Hot News
 
 on:
   schedule:
-    - cron: "5 */2 * * *"      # 速报：每2小时，UTC 0:05,2:05...
-    - cron: "30 12 * * *"      # 日报：每天 20:30 北京时间
-    - cron: "0 1 * * 0"        # 周报：周日 9:00 北京时间
+    - cron: "5 */2 * * *"
+    - cron: "30 12 * * *"
+    - cron: "0 1 * * 0"
 
   workflow_dispatch:
 
@@ -110,7 +110,7 @@ jobs:
           S3_ENDPOINT_URL: ${{ secrets.S3_ENDPOINT_URL }}
           S3_REGION: ${{ secrets.S3_REGION }}
           GITHUB_ACTIONS: true
-        run: uv run python -m trendradar --mode incremental
+        run: uv run python -m trendradar --report-mode incremental
 
       - name: Run crawler (Daily Report)
         if: steps.mode.outputs.mode == 'daily'
@@ -125,7 +125,7 @@ jobs:
           S3_ENDPOINT_URL: ${{ secrets.S3_ENDPOINT_URL }}
           S3_REGION: ${{ secrets.S3_REGION }}
           GITHUB_ACTIONS: true
-        run: uv run python -m trendradar --mode daily
+        run: uv run python -m trendradar --report-mode daily
 
       - name: Run crawler (Weekly Report)
         if: steps.mode.outputs.mode == 'weekly'
@@ -140,4 +140,4 @@ jobs:
           S3_ENDPOINT_URL: ${{ secrets.S3_ENDPOINT_URL }}
           S3_REGION: ${{ secrets.S3_REGION }}
           GITHUB_ACTIONS: true
-        run: uv run python -m trendradar --mode daily --days 7
+        run: uv run python -m trendradar --report-mode daily --days 7
