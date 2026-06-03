@@ -1,0 +1,49 @@
+name: Weekly Report
+
+on:
+  schedule:
+    # 每周日 9:00 (UTC) = 北京时间 17:00
+    # 如果要北京时间 9:00，改成 "0 1 * * 0"
+    - cron: "0 9 * * 0"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  weekly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          clean: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Install dependencies
+        run: uv sync --frozen --no-dev
+
+      - name: Run Weekly Report
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          AI_ANALYSIS_ENABLED: "true"
+          AI_API_KEY: ${{ secrets.AI_API_KEY }}
+          S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+          S3_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
+          S3_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+          S3_ENDPOINT_URL: ${{ secrets.S3_ENDPOINT_URL }}
+          S3_REGION: ${{ secrets.S3_REGION }}
+          GITHUB_ACTIONS: true
+        run: uv run python -m trendradar --mode daily --days 7
