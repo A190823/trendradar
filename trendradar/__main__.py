@@ -548,6 +548,13 @@ class NewsAnalyzer:
             # 设置 AI 分析使用的模式
             if result.success:
                 result.ai_mode = ai_mode
+                # 设置报告类型（速报/日报/周报），用于渲染器
+                if schedule and schedule.report_type:
+                    result.report_type = schedule.report_type
+                elif ai_mode == "incremental":
+                    result.report_type = "速报"
+                elif ai_mode in ("daily", "current"):
+                    result.report_type = "日报"
                 if result.error:
                     # 成功但有警告（如 JSON 解析问题但使用了原始文本）
                     print(f"[AI] 分析完成（有警告: {result.error}）")

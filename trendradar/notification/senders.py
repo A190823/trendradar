@@ -545,17 +545,9 @@ def send_to_telegram(
         if len(batches) > 1:
             batches = add_batch_headers(batches, "telegram", batch_size)
     else:
-        # 无 AI 分析时回退到关键词统计格式
-        batches = split_content_func(
-            report_data, "telegram", update_info, max_bytes=batch_size - header_reserve, mode=mode,
-            rss_items=rss_items,
-            rss_new_items=rss_new_items,
-            ai_content=None,
-            standalone_data=standalone_data,
-            ai_stats=None,
-            report_type=report_type,
-        )
-        batches = add_batch_headers(batches, "telegram", batch_size)
+        # 无 AI 分析时跳过推送（不做关键词统计格式）
+        print(f"{log_prefix}无 AI 简报，跳过推送 [{report_type}]")
+        return True
 
     print(f"{log_prefix}消息分为 {len(batches)} 批次发送 [{report_type}]")
 

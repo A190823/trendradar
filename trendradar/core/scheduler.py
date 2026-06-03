@@ -30,6 +30,7 @@ class ResolvedSchedule:
     frequency_file: Optional[str] = None  # 频率词文件路径，None=使用默认
     filter_method: Optional[str] = None   # 筛选策略: "keyword"|"ai"，None=使用全局配置
     interests_file: Optional[str] = None  # AI 筛选兴趣文件，None=使用默认
+    report_type: Optional[str] = None     # 报告类型（日报/周报），None=自动推导
 
 
 class Scheduler:
@@ -171,6 +172,7 @@ class Scheduler:
             frequency_file=merged.get("frequency_file"),
             filter_method=merged.get("filter_method"),
             interests_file=merged.get("interests_file"),
+            report_type=merged.get("report_type"),
         )
 
         # 打印行为摘要

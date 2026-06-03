@@ -248,8 +248,20 @@ def render_ai_analysis_telegram(result: AIAnalysisResult) -> str:
     date_str = now.strftime("%Y-%m-%d")
     time_str = now.strftime("%H:%M")
 
+    # 根据 report_type 确定标题和 emoji
+    rt = result.report_type or ""
+    if "周报" in rt:
+        title_emoji = "📊"
+        title_text = "AI周报"
+    elif "日报" in rt:
+        title_emoji = "📋"
+        title_text = "AI日报"
+    else:
+        title_emoji = "⚡"
+        title_text = "AI速报"
+
     lines = [
-        f"<b>⚡ AI简报 | {date_str}</b>",
+        f"<b>{title_emoji} {title_text} | {date_str}</b>",
         "━━━━━━━━━━━━━━",
         "",
     ]

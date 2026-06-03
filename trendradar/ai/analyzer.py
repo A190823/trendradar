@@ -44,6 +44,9 @@ class AIAnalysisResult:
     include_rss: bool = True             # 是否启用 RSS 分析
     include_standalone: bool = False     # 是否启用独立展示区分析
 
+    # 报告类型（速报/日报/周报/空=自动推导），用于特定格式的渲染
+    report_type: str = ""
+
 
 class AIAnalyzer:
     """AI 分析器"""
