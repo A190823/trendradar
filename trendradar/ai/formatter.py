@@ -231,38 +231,53 @@ def render_ai_analysis_plain(result: AIAnalysisResult) -> str:
 
 
 def render_ai_analysis_telegram(result: AIAnalysisResult) -> str:
-    """渲染为 Telegram HTML 格式（配合 parse_mode: HTML）
+    """渲染为 AI 简报格式（Telegram HTML，配合 parse_mode: HTML）
 
     Telegram Bot API 的 HTML 模式仅支持有限标签：
     <b>, <i>, <u>, <s>, <code>, <pre>, <a href="">, <blockquote>
     换行直接使用 \\n，不支持 <br>, <div>, <h1>-<h6> 等标签。
     """
+    from datetime import datetime
+
     if not result.success:
         if result.skipped:
             return f"ℹ️ {_escape_html(result.error)}"
         return f"⚠️ AI 分析失败: {_escape_html(result.error)}"
 
-    lines = ["<b>✨ AI 热点分析</b>", ""]
+    now = datetime.now()
+    date_str = now.strftime("%Y-%m-%d")
+    time_str = now.strftime("%H:%M")
 
-    if result.core_trends:
-        lines.extend(["<b>核心热点态势</b>", _escape_html(_format_list_content(result.core_trends)), ""])
+    lines = [
+        f"<b>⚡ AI简报 | {date_str}</b>",
+        "━━━━━━━━━━━━━━",
+        "",
+    ]
 
-    if result.sentiment_controversy:
-        lines.extend(["<b>舆论风向争议</b>", _escape_html(_format_list_content(result.sentiment_controversy)), ""])
+    sections = [
+        ("🔥 模型更新", result.core_trends),
+        ("📢 舆论风向", result.sentiment_controversy),
+        ("📡 异动信号", result.signals),
+        ("📰 RSS 洞察", result.rss_insights),
+        ("💡 策略建议", result.outlook_strategy),
+    ]
 
-    if result.signals:
-        lines.extend(["<b>异动与弱信号</b>", _escape_html(_format_list_content(result.signals)), ""])
-
-    if result.rss_insights:
-        lines.extend(["<b>RSS 深度洞察</b>", _escape_html(_format_list_content(result.rss_insights)), ""])
-
-    if result.outlook_strategy:
-        lines.extend(["<b>研判策略建议</b>", _escape_html(_format_list_content(result.outlook_strategy)), ""])
+    for emoji_title, content in sections:
+        if content:
+            formatted = _format_list_content(content)
+            lines.append(f"<b>{emoji_title}</b>")
+            lines.append(formatted)
+            lines.append("")
 
     if result.standalone_summaries:
         summaries_text = _format_standalone_summaries(result.standalone_summaries)
         if summaries_text:
-            lines.extend(["<b>独立源点速览</b>", _escape_html(summaries_text)])
+            lines.append("<b>📋 独立概览</b>")
+            lines.append(summaries_text)
+            lines.append("")
+
+    lines.append("━━━━━━━━━━━━━━")
+    lines.append(f"🤖 {time_str} 北京时间")
 
     return "\n".join(lines)
 

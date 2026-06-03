@@ -520,24 +520,42 @@ def send_to_telegram(
     # 日志前缀
     log_prefix = f"Telegram{account_label}" if account_label else "Telegram"
 
-    # 渲染 AI 分析内容并提取统计数据
+    # 渲染 AI 简报内容
     ai_content = _render_ai_analysis(ai_analysis, "telegram") if ai_analysis else None
-    ai_stats = _extract_ai_stats(ai_analysis)
 
     # 获取分批内容，预留批次头部空间
     header_reserve = get_max_batch_header_size("telegram")
-    batches = split_content_func(
-        report_data, "telegram", update_info, max_bytes=batch_size - header_reserve, mode=mode,
-        rss_items=rss_items,
-        rss_new_items=rss_new_items,
-        ai_content=ai_content,
-        standalone_data=standalone_data,
-        ai_stats=ai_stats,
-        report_type=report_type,
-    )
 
-    # 统一添加批次头部（已预留空间，不会超限）
-    batches = add_batch_headers(batches, "telegram", batch_size)
+    if ai_content:
+        # AI 简报模式：只发 AI 分析，不走关键词统计
+        ai_lines = ai_content.split("\n")
+        batches = []
+        current = ""
+        footer_size = 0
+        for line in ai_lines:
+            candidate = current + line + "\n"
+            if len(candidate.encode("utf-8")) + footer_size > batch_size - header_reserve and current.strip():
+                batches.append(current)
+                current = line + "\n"
+            else:
+                current = candidate
+        if current.strip():
+            batches.append(current)
+        # 只有一批次时不加批次号
+        if len(batches) > 1:
+            batches = add_batch_headers(batches, "telegram", batch_size)
+    else:
+        # 无 AI 分析时回退到关键词统计格式
+        batches = split_content_func(
+            report_data, "telegram", update_info, max_bytes=batch_size - header_reserve, mode=mode,
+            rss_items=rss_items,
+            rss_new_items=rss_new_items,
+            ai_content=None,
+            standalone_data=standalone_data,
+            ai_stats=None,
+            report_type=report_type,
+        )
+        batches = add_batch_headers(batches, "telegram", batch_size)
 
     print(f"{log_prefix}消息分为 {len(batches)} 批次发送 [{report_type}]")
 
