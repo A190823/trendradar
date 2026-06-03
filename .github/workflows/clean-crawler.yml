@@ -24,5 +24,5 @@ jobs:
           repository: ${{ github.repository }}
           retain_days: 0
           keep_minimum_runs: 0
-          delete_workflow_by_state_pattern: "ALL"
-          delete_run_by_conclusion_pattern: "ALL"
+          delete_workflow_by_state_pattern: "active,deleted,disabled_fork,disabled_inactivity,disabled_manually"
+          delete_run_by_conclusion_pattern: "action_required,cancelled,failure,skipped,success"
