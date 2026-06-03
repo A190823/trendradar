@@ -237,14 +237,16 @@ def render_ai_analysis_telegram(result: AIAnalysisResult) -> str:
     <b>, <i>, <u>, <s>, <code>, <pre>, <a href="">, <blockquote>
     换行直接使用 \\n，不支持 <br>, <div>, <h1>-<h6> 等标签。
     """
-    from datetime import datetime
+    from datetime import datetime, timezone, timedelta
 
     if not result.success:
         if result.skipped:
             return f"ℹ️ {_escape_html(result.error)}"
         return f"⚠️ AI 分析失败: {_escape_html(result.error)}"
 
-    now = datetime.now()
+    # GitHub Actions 运行在 UTC，转换为北京时间（UTC+8）
+    cst = timezone(timedelta(hours=8))
+    now = datetime.now(cst)
     date_str = now.strftime("%Y-%m-%d")
     time_str = now.strftime("%H:%M")
 
@@ -267,11 +269,11 @@ def render_ai_analysis_telegram(result: AIAnalysisResult) -> str:
     ]
 
     sections = [
-        ("🔥 模型更新", result.core_trends),
-        ("📢 舆论风向", result.sentiment_controversy),
-        ("📡 异动信号", result.signals),
-        ("📰 RSS 洞察", result.rss_insights),
-        ("💡 策略建议", result.outlook_strategy),
+        ("🔥 热点追踪", result.core_trends),
+        ("📢 大家怎么看", result.sentiment_controversy),
+        ("📡 值得关注", result.signals),
+        ("📰 深度阅读", result.rss_insights),
+        ("💡 随便聊聊", result.outlook_strategy),
     ]
 
     for emoji_title, content in sections:
@@ -284,7 +286,7 @@ def render_ai_analysis_telegram(result: AIAnalysisResult) -> str:
     if result.standalone_summaries:
         summaries_text = _format_standalone_summaries(result.standalone_summaries)
         if summaries_text:
-            lines.append("<b>📋 独立概览</b>")
+            lines.append("<b>📋 随便看看</b>")
             lines.append(summaries_text)
             lines.append("")
 
