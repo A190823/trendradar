@@ -2,13 +2,9 @@ name: Get Hot News
 
 on:
   schedule:
-    # 速报：每2小时一次 (例如北京时间 8:05, 10:05...)
     - cron: "5 */2 * * *"
-    # 日报：每天 20:30 北京时间 (UTC 12:30)
     - cron: "30 12 * * *"
-    # 周报：每周日 9:00 北京时间 (UTC 1:00)
     - cron: "0 1 * * 0"
-
   workflow_dispatch:
 
 concurrency:
@@ -85,32 +81,27 @@ jobs:
             exit 1
           fi
 
-      # 根据 UTC 时间动态判断当前应该执行哪种报告
       - name: Determine report mode
         id: mode
         run: |
           HOUR=$(date +%H)
           MINUTE=$(date +%M)
-          DAY_OF_WEEK=$(date +%u)  # 1=周一, 7=周日
+          DAY_OF_WEEK=$(date +%u)
 
-          # 周报：周日 1:00 UTC (北京时间 9:00)
           if [ "$DAY_OF_WEEK" -eq 7 ] && [ "$HOUR" -eq 1 ] && [ "$MINUTE" -lt 10 ]; then
             echo "mode=weekly" >> $GITHUB_OUTPUT
-          # 日报：每天 12:30 UTC (北京时间 20:30)
           elif [ "$HOUR" -eq 12 ] && [ "$MINUTE" -ge 30 ] && [ "$MINUTE" -lt 40 ]; then
             echo "mode=daily" >> $GITHUB_OUTPUT
-          # 速报：其他时间
           else
             echo "mode=incremental" >> $GITHUB_OUTPUT
           fi
 
-      # ---------- 速报（增量模式）----------
       - name: Run crawler (Speed Report)
         if: steps.mode.outputs.mode == 'incremental'
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          AI_ANALYSIS_ENABLED: "true"          # AI 分析总开关
+          AI_ANALYSIS_ENABLED: "true"
           AI_API_KEY: ${{ secrets.AI_API_KEY }}
           S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
           S3_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
@@ -120,7 +111,6 @@ jobs:
           GITHUB_ACTIONS: true
         run: uv run python -m trendradar --mode incremental
 
-      # ---------- 日报（当日汇总模式）----------
       - name: Run crawler (Daily Report)
         if: steps.mode.outputs.mode == 'daily'
         env:
@@ -136,7 +126,6 @@ jobs:
           GITHUB_ACTIONS: true
         run: uv run python -m trendradar --mode daily
 
-      # ---------- 周报（过去7天汇总）----------
       - name: Run crawler (Weekly Report)
         if: steps.mode.outputs.mode == 'weekly'
         env:
