@@ -291,7 +291,7 @@ def render_ai_analysis_telegram(result: AIAnalysisResult) -> str:
             lines.append("")
 
     lines.append("━━━━━━━━━━━━━━")
-    lines.append(f"🤖 {time_str} 北京时间")
+    lines.append(f"🤖 {time_str} 北京时间 · 📡 AI 自动生成")
 
     return "\n".join(lines)
 
