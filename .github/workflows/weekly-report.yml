@@ -46,4 +46,4 @@ jobs:
           S3_ENDPOINT_URL: ${{ secrets.S3_ENDPOINT_URL }}
           S3_REGION: ${{ secrets.S3_REGION }}
           GITHUB_ACTIONS: true
-        run: uv run python -m trendradar --mode daily --days 7
+        run: uv run python -m trendradar
